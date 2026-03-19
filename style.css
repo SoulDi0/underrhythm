@@ -1,0 +1,305 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; min-height: 100vh;
+      background: #090909;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      overflow: hidden;
+    }
+    .carousel-wrap {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      width: 100vw;
+      overflow: hidden;
+    }
+    .carousel-track {
+      position: relative;
+      width: 460px;
+      height: 780px;
+    }
+    .player-card,
+    .side-card {
+      position: absolute;
+      top: 0; left: 0;
+      width: 460px;
+      min-height: 780px;
+      border-radius: 36px;
+      /* overflow:visible чтобы album-wrapper мог выходить за бока */
+      overflow: visible;
+      padding: 0 36px 28px;
+      display: flex; flex-direction: column; align-items: center;
+      will-change: transform, filter, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .player-card {
+      z-index: 10;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.85);
+    }
+    .side-card {
+      z-index: 1;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      pointer-events: auto;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    /* Клип для скруглённых углов — охватывает всё кроме album-wrapper */
+    .card-clip {
+      position: absolute;
+      inset: 0;
+      border-radius: 36px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bg-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.5); opacity: 0;
+      animation: floatUp var(--dur,8s) ease-in-out var(--delay,0s) infinite;
+    }
+    @keyframes floatUp {
+      0%   { opacity:0; transform:translateY(0) scale(1); }
+      20%  { opacity:0.07; }
+      80%  { opacity:0.03; }
+      100% { opacity:0; transform:translateY(-100vh) scale(0.4); }
+    }
+    /* Картинка — абсолютный фон на всю карточку, выходит за бока на 24px */
+    .album-wrapper {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: -30px; right: -30px;
+      z-index: 0;
+      pointer-events: none;
+    }
+    #coverImg { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.4s ease; }
+    .default-cover {
+      width: 100%; height: 100%; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 76px; opacity: 0.15; font-family: 'DM Serif Display', serif;
+    }
+    .actions-row {
+      width: calc(100% + 72px); margin-left: -36px; margin-right: -36px;
+      display: flex; justify-content: center; position: relative;
+      margin-top: auto; margin-bottom: 10px; z-index: 2;
+    }
+    .char-name {
+      width: calc(100% + 72px); margin-left: -36px; margin-right: -36px;
+      text-align: center; padding: 18px 36px 0;
+      font-family: 'IBM Plex Mono', monospace; font-size: 20px;
+      letter-spacing: 0.12em; text-transform: uppercase; transition: none;
+      position: relative; margin-bottom: -8px; z-index: 3;
+    }
+    .credits-row {
+      width: calc(100% + 72px); margin-left: -36px; margin-right: -36px;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      padding: 10px 20px 0; margin-top: 8px; position: relative; z-index: 1;
+    }
+    .credit-item { display: flex; flex-direction: column; gap: 2px; }
+    .credit-item.right { align-items: flex-end; text-align: right; }
+    .credit-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.65; }
+    .credit-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; letter-spacing: 0.06em; text-decoration: none;
+      opacity: 0.9; transition: opacity 0.2s; cursor: pointer;
+    }
+    .credit-link:hover { opacity: 1; }
+    .credit-link svg { width: 11px; height: 11px; flex-shrink: 0; opacity: 0.8; }
+    .track-title {
+      width: 100%; text-align: center; font-size: 13px;
+      letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 18px;
+      transition: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      position: relative; z-index: 1;
+    }
+    .heart-btn {
+      background: none; border: none; cursor: pointer; padding: 0;
+      transition: transform 0.18s; display: flex; align-items: center; justify-content: center;
+    }
+    .heart-btn:hover  { transform: scale(1.18); }
+    .heart-btn:active { transform: scale(0.88); }
+    .heart-svg { width: 36px; height: 36px; display: block; transition: none; overflow: visible; }
+    .heart-btn.liked { animation: heartPop 0.35s ease; }
+    @keyframes heartPop {
+      0%  { transform:scale(1); } 40% { transform:scale(1.45); }
+      70% { transform:scale(0.87); } 100%{ transform:scale(1); }
+    }
+    .progress-section { width:100%; margin-bottom:26px; position: relative; z-index: 1; }
+    .progress-track {
+      width:100%; height:6px; border-radius:99px; position:relative; cursor:pointer;
+      background: rgba(0,0,0,0.12);
+    }
+    .player-card.dark-card .progress-track { background: rgba(255,255,255,0.12); }
+    .progress-fill { height:100%; width:0%; border-radius:99px; pointer-events:none; transition: width 0.08s linear; }
+    .progress-thumb {
+      position:absolute; top:50%; transform:translate(-50%,-50%);
+      width:20px; height:20px; pointer-events:none;
+      display:flex; align-items:center; justify-content:center; background: none !important;
+    }
+    .progress-thumb svg { width:20px; height:20px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25)); }
+    .time-row { display:flex; justify-content:space-between; margin-top:8px; }
+    .time-label { font-size:11px; letter-spacing:0.04em; }
+    .controls-row {
+      display:flex; align-items:center; justify-content:center;
+      gap:18px; width:100%; position: relative; z-index: 1;
+    }
+    .ctrl-btn {
+      background:none; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; border-radius:50%;
+    }
+    .ctrl-btn:hover  { transform:scale(1.12); }
+    .ctrl-btn:active { transform:scale(0.88); }
+    .skip-svg { width:28px; height:28px; }
+    .play-btn {
+      width:72px; height:72px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .play-btn:hover  { transform:scale(1.08); box-shadow:0 6px 26px rgba(0,0,0,0.35); }
+    .play-btn:active { transform:scale(0.92); }
+    #playIcon  { display:block; }
+    #pauseIcon { display:none; align-items:center; justify-content:center; gap:6px; }
+    #pauseIcon span { display:block; width:5px; height:22px; border-radius:2px; }
+    .mode-btn {
+      background:none; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      padding:4px; border-radius:50%; transition: transform 0.18s;
+    }
+    .mode-btn:hover  { transform:scale(1.15); }
+    .mode-btn:active { transform:scale(0.88); }
+    /* KEY: stroke transition on SVG enables smooth color animation during card movement */
+    .mode-btn svg { width:20px; height:20px; transition: stroke 0.45s ease; }
+    .left-modes {
+      display:flex; align-items:center; gap:30px;
+      position: absolute; left: 0; transform: translateX(-12px);
+    }
+    .volume-btn {
+      background:none; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      padding:4px; border-radius:50%; transition:transform 0.18s;
+      position: absolute; right: 16px;
+    }
+    .volume-btn:hover { transform:scale(1.15); }
+    .volume-btn svg { width:26px; height:26px; }
+    .volume-popup {
+      position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%) translateY(6px); width: 36px;
+      padding: 14px 0 10px; background: var(--card-popup-bg, #ffffff);
+      border: 1px solid var(--card-popup-border, rgba(0,0,0,0.15));
+      border-radius: 20px; display: flex; flex-direction: column; align-items: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.18s, transform 0.18s;
+      z-index: 50; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .volume-popup.vol-visible { opacity: 1; pointer-events: all; transform: translateX(-50%) translateY(0); }
+    .volume-slider {
+      -webkit-appearance: none; appearance: none;
+      writing-mode: vertical-lr; direction: rtl;
+      width: 4px; height: 80px; border-radius: 99px; outline: none; cursor: pointer;
+      background: var(--vol-gradient, var(--card-popup-track, rgba(0,0,0,0.12)));
+    }
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+      background: var(--card-popup-thumb, #1a1a1a); cursor: pointer; transition: background 0.3s;
+    }
+    .volume-slider::-moz-range-thumb {
+      width: 13px; height: 13px; border-radius: 50%; border: none;
+      background: var(--card-popup-thumb, #1a1a1a); cursor: pointer;
+    }
+
+.carousel-wrap { transition: margin-left 0.4s cubic-bezier(0.16,1,0.3,1); }
+    body.menu-open .carousel-wrap { margin-left: clamp(360px, 34vw, 500px); }
+    .burger-btn {
+      position: fixed; top: 24px; left: 24px; z-index: 200;
+      background: none; border: none; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: center;
+      gap: 5px; padding: 6px; transition: opacity 0.2s;
+    }
+    .burger-btn:hover { opacity: 0.6; }
+    .burger-btn span {
+      display: block; width: 24px; height: 2px;
+      background: rgba(255,255,255,0.75); border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease; transform-origin: center;
+    }
+    body.menu-open .burger-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    body.menu-open .burger-btn span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    body.menu-open .burger-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .side-menu {
+      position: fixed; top: 0; left: 0;
+      width: clamp(360px, 34vw, 500px); height: 100vh;
+      background: rgba(12,12,12,0.97); backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.06); z-index: 150;
+      transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+      display: flex; flex-direction: column; padding: 80px 28px 36px; gap: 0;
+    }
+    body.menu-open .side-menu { transform: translateX(0); }
+    .menu-search {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 28px;
+    }
+    .menu-search svg { width:14px; height:14px; stroke:rgba(255,255,255,0.35); flex-shrink:0; }
+    .menu-search input {
+      background: none; border: none; outline: none; color: rgba(255,255,255,0.8);
+      font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.04em; width: 100%;
+    }
+    .menu-search input::placeholder { color: rgba(255,255,255,0.25); }
+    .menu-panel { display: none; flex-direction: column; gap: 4px; margin-top: 12px; overflow-y: auto; flex: 1; min-height: 0; }
+    .menu-panel.visible { display: flex; }
+    .menu-track-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 10px; border-radius: 10px; cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      border: 1px solid transparent;
+    }
+    .menu-track-item:hover { background: rgba(255,255,255,0.05); }
+    .menu-track-item.active-track {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 0 12px rgba(255,255,255,0.08);
+    }
+    /* Квадратная обложка */
+    .mti-cover {
+      width: 56px; height: 56px; flex-shrink: 0;
+      border-radius: 8px; overflow: hidden; background: rgba(255,255,255,0.06);
+    }
+    .mti-cover img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; display: block; transform: scale(1.32); transform-origin: center 22%; }
+    /* Две колонки текста */
+    .mti-info { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: center; }
+    .mti-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .mti-title  { font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mti-music  { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
+    .mti-char   { font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+    .mti-artist { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; text-align: right; }
+    /* Лайк */
+    .mti-heart { flex-shrink: 0; width: 28px; display: flex; align-items: center; justify-content: center; }
+    .mti-heart img { width: 22px; height: 22px; object-fit: contain; }
+    .mti-heart svg { width: 20px; height: 20px; overflow: visible; }
+    .menu-track-item.active-track .mti-title { color: #fff; }
+    .menu-track-item.active-track .mti-char  { color: #fff; }
+    .menu-credits { display: none; flex-direction: column; gap: 16px; margin-top: 12px; overflow-y: auto; flex: 1; min-height: 0; }
+    .menu-credits.visible { display: flex; }
+    .menu-credit-entry { padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.04); }
+    .mce-char { font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 6px; letter-spacing:0.06em; }
+    .mce-row { display:flex; justify-content:space-between; align-items:center; }
+    .mce-label { font-size: 9px; color: rgba(255,255,255,0.3); letter-spacing:0.12em; text-transform:uppercase; }
+    .mce-link { font-size: 11px; color: rgba(255,255,255,0.6); text-decoration:none; display:flex; align-items:center; gap:4px; transition:color 0.15s; }
+    .mce-link:hover { color: rgba(255,255,255,0.95); }
+    .mce-link svg { width:9px; height:9px; stroke:currentColor; fill:none; stroke-width:2; }
+    .menu-empty { font-size: 14px; color: rgba(255,255,255,0.2); text-align:center; padding: 20px 0; letter-spacing:0.06em; }
+    /* Нижние кнопки меню */
+    .menu-bottom-btns {
+      display: flex; flex-direction: column; gap: 8px;
+      padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 8px; flex-shrink: 0;
+    }
+    .menu-bottom-btn {
+      display: flex; align-items: center; gap: 10px;
+      background: none; border: 1px solid rgba(100,220,255,0.45); border-radius: 10px;
+      padding: 10px 14px; color: rgba(255,255,255,0.6);
+      font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.04em;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .menu-bottom-btn svg { width:15px; height:15px; flex-shrink:0; }
+    .menu-bottom-btn:hover { background: rgba(100,220,255,0.1); border-color: rgba(100,220,255,0.8); color: rgba(255,255,255,0.9); }

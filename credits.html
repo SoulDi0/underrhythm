@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Credits</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: #090909;
+      font-family: 'IBM Plex Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      padding: 32px 48px 24px;
+      position: relative;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+      cursor: pointer; padding: 8px 16px;
+      color: rgba(255,255,255,0.65);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      position: fixed; top: 28px; left: 36px; z-index: 100;
+    }
+    .back-btn:hover { color: rgba(255,255,255,0.95); border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.05); }
+    .back-btn svg { width: 18px; height: 18px; }
+    .page-title {
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+      font-weight: 400;
+      flex: 1;
+      text-align: center;
+    }
+
+    /* ── Grid ── */
+    .credits-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 337px);
+      gap: 32px;
+      justify-content: center;
+      padding: 16px 48px 64px;
+    }
+
+    /* ── Card ── */
+    /* Карточка — масштаб 300/460 ≈ 0.652 от оригинала */
+    .credit-card {
+      width: 337px;
+      border-radius: 26px;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding: 0 27px 21px;
+    }
+
+    /* Фон карточки */
+    .credit-card .c-clip {
+      position: absolute;
+      inset: 0;
+      border-radius: 26px;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Обложка — на всю карточку + выходит за бока */
+    .credit-card .c-cover {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: -21px; right: -21px;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .credit-card .c-cover img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .credit-card .c-cover .c-default {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; opacity: 0.15;
+      font-family: 'DM Serif Display', serif;
+    }
+
+    /* Имя персонажа */
+    .credit-card .c-char {
+      width: calc(100% + 54px);
+      margin-left: -27px; margin-right: -27px;
+      text-align: center;
+      padding: 14px 27px 0;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 3;
+      margin-bottom: -6px;
+    }
+
+    /* Отступ чтобы контент начинался после картинки */
+    .credit-card .c-spacer {
+      /* высота картинки = высота карточки минус контент снизу
+         оригинал: картинка 511px при карточке 780px = 65.5%
+         здесь: 300px ширина, высота 507px, картинка ~332px */
+      height: 373px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Блок авторов — по середине слева */
+    .credit-card .c-authors {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      z-index: 2;
+      margin-top: 14px;
+    }
+
+    .credit-card .c-author-row {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .credit-card .c-author-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+    .credit-card .c-author-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      opacity: 0.9;
+      transition: opacity 0.15s;
+      word-break: break-word;
+    }
+    .credit-card .c-author-link:hover { opacity: 1; }
+    .credit-card .c-author-link svg {
+      width: 9px; height: 9px; flex-shrink: 0; opacity: 0.7;
+    }
+    .credit-card .c-author-plain {
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      opacity: 0.7;
+    }
+
+    /* Разделитель между авторами */
+    .credit-card .c-divider {
+      width: 100%;
+      height: 1px;
+      opacity: 0.12;
+      background: currentColor;
+      margin: 2px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <a class="back-btn" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back
+    </a>
+    <h1 class="page-title">Credits</h1>
+  </div>
+
+  <div class="credits-grid" id="creditsGrid"></div>
+
+  <script src="tracks.js"></script>
+  <script>
+  const LINK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function authorRow(label, name, url, colors){
+    if (!name) return '';
+    var link = url && url !== 'https://example.com'
+      ? '<a class="c-author-link" href="'+esc(url)+'" target="_blank" style="color:'+colors.name+'">'+esc(name)+LINK_ICON+'</a>'
+      : '<span class="c-author-plain" style="color:'+colors.name+'">'+esc(name)+'</span>';
+    return '<div class="c-author-row">'+
+      '<span class="c-author-label" style="color:'+colors.label+'">'+label+'</span>'+
+      link+
+    '</div>';
+  }
+
+  function buildCard(t){
+    var isGif = t.cover && t.cover.toLowerCase().endsWith('.gif');
+    var coverSrc = t.cover ? (isGif ? t.cover + '?t=' + Date.now() : t.cover) : '';
+    var colors = { name: t.creditName, label: t.creditLabel };
+
+    var artRow   = authorRow('Art by',   t.artName,   t.artUrl,   colors);
+    var musicRow = authorRow('Music by', t.musicName, t.musicUrl, colors);
+    var auRow    = authorRow('AU by',    t.auName,    t.auUrl,    colors);
+
+    // Build dividers between non-empty rows
+    var rows = [artRow, musicRow, auRow].filter(Boolean);
+    var authorsHtml = rows.join('<div class="c-divider"></div>');
+
+    var card = document.createElement('div');
+    card.className = 'credit-card';
+    card.innerHTML =
+      '<div class="c-clip" style="background:'+t.cardColor+'"></div>'+
+      '<div class="c-cover">'+
+        (coverSrc
+          ? '<img src="'+esc(coverSrc)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+          : '')+
+        '<div class="c-default" style="'+(coverSrc?'display:none':'')+'">♪</div>'+
+      '</div>'+
+      '<div class="c-char" style="color:'+t.charColor+'">'+esc(t.character||'')+'</div>'+
+      '<div class="c-spacer"></div>'+
+      '<div class="c-authors">'+authorsHtml+'</div>';
+
+    return card;
+  }
+
+  var grid = document.getElementById('creditsGrid');
+  TRACKS.forEach(function(t){ grid.appendChild(buildCard(t)); });
+  </script>
+</body>
+</html>

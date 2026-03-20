@@ -155,22 +155,28 @@ function loadTrack(i){
   audio.src = t.music; audio.load();
   var src = t.cover, isGif = src && src.toLowerCase().endsWith('.gif');
 
-  // Сразу сбрасываем текущее изображение чтобы не было наложения
-  coverImg.src = '';
-  coverImg.style.opacity = '0';
-  coverImg.style.display = 'none';
+  // Сбрасываем старую картинку сразу — но GIF не трогаем если src уже тот же
   defaultCover.style.display = 'none';
 
   if (!src){
+    coverImg.src = '';
+    coverImg.style.display = 'none';
     defaultCover.style.display = 'flex';
   } else if (isGif){
-    coverImg.src = src + '?t=' + Date.now();
+    // GIF: просто меняем src без cache-bust — браузер держит его в памяти
+    // Если src уже совпадает — вообще не трогаем (не перезапускаем)
+    if (coverImg.src !== src && coverImg.src !== location.href.replace(/[^/]*$/, src)){
+      coverImg.src = src;
+    }
     coverImg.style.display = 'block';
     coverImg.style.opacity = '1';
   } else {
+    // Статичное изображение: сразу скрываем старое
+    coverImg.style.opacity = '0';
+    coverImg.style.display = 'none';
+    coverImg.src = '';
     var tmp = new Image();
     tmp.onload = function(){
-      // Проверяем что трек не сменился пока грузилась картинка
       if (currentIndex !== i) return;
       coverImg.src = src;
       coverImg.style.display = 'block';
@@ -180,7 +186,6 @@ function loadTrack(i){
       if (currentIndex !== i) return;
       defaultCover.style.display = 'flex';
     };
-    // Если уже в кэше — показываем сразу
     if (tmp.complete && tmp.naturalWidth > 0){
       coverImg.src = src;
       coverImg.style.display = 'block';
@@ -340,7 +345,7 @@ function fillSideCard(el, idx){
   el.innerHTML=
     '<div class="card-clip" style="background:'+t.cardColor+'"></div>'+
     '<div class="char-name" style="color:'+t.charColor+'">'+esc(t.character||'')+'</div>'+
-    '<div class="album-wrapper"><img src="'+(t.cover ? (t.cover.toLowerCase().endsWith('.gif') ? t.cover+'?t='+Date.now() : t.cover) : '')+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="default-cover" style="display:none">♪</div></div>'+
+    '<div class="album-wrapper"><img src="'+(t.cover||'')+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="default-cover" style="display:none">♪</div></div>'+
     '<div class="actions-row"><button class="heart-btn" style="pointer-events:none">'+heartHtml+'</button></div>'+
     '<div class="track-title" style="color:'+t.titleColor+'">'+esc(t.title||'')+'</div>'+
     '<div class="progress-section"><div class="progress-track" style="background:'+t.progressBg+'">'+

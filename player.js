@@ -23,7 +23,8 @@ const nextBtn       = document.getElementById('nextBtn');
 const charNameEl    = document.getElementById('charName');
 const trackTitleEl  = document.getElementById('trackTitle');
 const volIcon       = document.getElementById('volIcon');
-const volWave       = document.getElementById('volWave');
+const volWave1      = document.getElementById('volWave1');
+const volWave2      = document.getElementById('volWave2');
 const volumeSlider  = document.getElementById('volumeSlider');
 const shuffleBtn    = document.getElementById('shuffleBtn');
 const repeatBtn     = document.getElementById('repeatBtn');
@@ -149,21 +150,44 @@ function preloadImages(center){
 // ── Загрузка трека ────────────────────────────────────────────────────────────
 function loadTrack(i){
   currentIndex = i;
+  localStorage.setItem('trackIndex', i);
   var t = TRACKS[i];
   audio.src = t.music; audio.load();
   var src = t.cover, isGif = src && src.toLowerCase().endsWith('.gif');
+
+  // Сразу сбрасываем текущее изображение чтобы не было наложения
+  coverImg.src = '';
+  coverImg.style.opacity = '0';
+  coverImg.style.display = 'none';
+  defaultCover.style.display = 'none';
+
   if (!src){
-    coverImg.style.display='none'; defaultCover.style.display='flex';
+    defaultCover.style.display = 'flex';
   } else if (isGif){
-    coverImg.src=src+'?t='+Date.now(); coverImg.style.display='block'; coverImg.style.opacity='1'; defaultCover.style.display='none';
+    coverImg.src = src + '?t=' + Date.now();
+    coverImg.style.display = 'block';
+    coverImg.style.opacity = '1';
   } else {
-    var tmp=new Image();
-    tmp.onload=function(){ coverImg.src=src; coverImg.style.display='block'; defaultCover.style.display='none'; coverImg.style.opacity='1'; };
-    tmp.onerror=function(){ coverImg.style.display='none'; defaultCover.style.display='flex'; };
-    tmp.src=src;
-    if (tmp.complete&&tmp.naturalWidth>0){
-      coverImg.src=src; coverImg.style.display='block'; coverImg.style.opacity='1'; defaultCover.style.display='none';
-    } else { coverImg.style.opacity='0'; }
+    var tmp = new Image();
+    tmp.onload = function(){
+      // Проверяем что трек не сменился пока грузилась картинка
+      if (currentIndex !== i) return;
+      coverImg.src = src;
+      coverImg.style.display = 'block';
+      coverImg.style.opacity = '1';
+    };
+    tmp.onerror = function(){
+      if (currentIndex !== i) return;
+      defaultCover.style.display = 'flex';
+    };
+    // Если уже в кэше — показываем сразу
+    if (tmp.complete && tmp.naturalWidth > 0){
+      coverImg.src = src;
+      coverImg.style.display = 'block';
+      coverImg.style.opacity = '1';
+    } else {
+      tmp.src = src;
+    }
   }
   applyTheme(t);
   charNameEl.textContent=t.character||''; trackTitleEl.textContent=t.title||'';
@@ -234,14 +258,21 @@ function seekTo(cx){
   progressFill.style.width=(p*100)+'%'; progressThumb.style.left=(p*100)+'%';
   currentTimeEl.textContent=fmt(p*(audio.duration||0));
 }
+function updateVisuals(cx){
+  var r=progressTrack.getBoundingClientRect(), p=Math.max(0,Math.min(cx-r.left,r.width))/r.width;
+  progressFill.style.width=(p*100)+'%'; progressThumb.style.left=(p*100)+'%';
+  currentTimeEl.textContent=fmt(p*(audio.duration||0));
+}
 progressTrack.addEventListener('mousedown',function(e){
-  isDragging=true; seekTo(e.clientX);
-  var mv=function(e2){seekTo(e2.clientX);}, up=function(){isDragging=false;document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};
+  isDragging=true; updateVisuals(e.clientX);
+  var mv=function(e2){ updateVisuals(e2.clientX); };
+  var up=function(e2){ isDragging=false; seekTo(e2.clientX); document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); };
   document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
 });
 progressTrack.addEventListener('touchstart',function(e){
-  isDragging=true; seekTo(e.touches[0].clientX);
-  var mv=function(e2){seekTo(e2.touches[0].clientX);}, en=function(){isDragging=false;document.removeEventListener('touchmove',mv);document.removeEventListener('touchend',en);};
+  isDragging=true; updateVisuals(e.touches[0].clientX);
+  var mv=function(e2){ updateVisuals(e2.touches[0].clientX); };
+  var en=function(e2){ isDragging=false; seekTo(e2.changedTouches[0].clientX); document.removeEventListener('touchmove',mv); document.removeEventListener('touchend',en); };
   document.addEventListener('touchmove',mv,{passive:true}); document.addEventListener('touchend',en);
 },{passive:true});
 
@@ -255,11 +286,16 @@ shuffleBtn.addEventListener('click',function(){ isShuffle=!isShuffle; if(isShuff
 repeatBtn.addEventListener('click',function(){ isRepeat=!isRepeat; if(isRepeat)isShuffle=false; updateModeButtons(); });
 
 // ── Громкость ─────────────────────────────────────────────────────────────────
+function updateVolIcon(){
+  var v = audio.volume;
+  volWave1.style.display = v > 0    ? '' : 'none'; // тихо и громко
+  volWave2.style.display = v > 0.5  ? '' : 'none'; // только громко
+}
 function updateVolumeFill(){
   var val=parseFloat(volumeSlider.value)*100, t=TRACKS[currentIndex];
   volumeSlider.style.background='linear-gradient(to top,'+(t?t.popupThumb:'#1a1a1a')+' '+val+'%,'+(t?t.popupTrack:'rgba(0,0,0,0.15)')+' '+val+'%)';
 }
-volumeSlider.addEventListener('input',function(){ audio.volume=parseFloat(this.value); volWave.style.display=audio.volume===0?'none':''; updateVolumeFill(); });
+volumeSlider.addEventListener('input',function(){ audio.volume=parseFloat(this.value); updateVolIcon(); updateVolumeFill(); localStorage.setItem('volume',this.value); });
 (function(){
   var btn=document.getElementById('volumeBtn'),popup=document.getElementById('volumePopup'),t=null;
   function show(){ clearTimeout(t); popup.classList.add('vol-visible'); }
@@ -304,7 +340,7 @@ function fillSideCard(el, idx){
   el.innerHTML=
     '<div class="card-clip" style="background:'+t.cardColor+'"></div>'+
     '<div class="char-name" style="color:'+t.charColor+'">'+esc(t.character||'')+'</div>'+
-    '<div class="album-wrapper"><img src="'+(t.cover||'')+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="default-cover" style="display:none">♪</div></div>'+
+    '<div class="album-wrapper"><img src="'+(t.cover ? (t.cover.toLowerCase().endsWith('.gif') ? t.cover+'?t='+Date.now() : t.cover) : '')+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="default-cover" style="display:none">♪</div></div>'+
     '<div class="actions-row"><button class="heart-btn" style="pointer-events:none">'+heartHtml+'</button></div>'+
     '<div class="track-title" style="color:'+t.titleColor+'">'+esc(t.title||'')+'</div>'+
     '<div class="progress-section"><div class="progress-track" style="background:'+t.progressBg+'">'+
@@ -318,7 +354,7 @@ function fillSideCard(el, idx){
     '<button class="ctrl-btn" style="pointer-events:none"><svg class="skip-svg" viewBox="0 0 24 24"><polygon points="19,20 9,12 19,4" style="'+skipPoly+'"/><line x1="5" y1="4" x2="5" y2="20" stroke-width="2" stroke-linecap="round" style="'+skipLine+'"/></svg></button>'+
     '<button class="ctrl-btn play-btn" style="background:'+t.btnColor+';pointer-events:none"><svg viewBox="0 0 24 24" width="22" height="22" style="fill:'+t.btnText+'"><polygon points="6,3 20,12 6,21"/></svg></button>'+
     '<button class="ctrl-btn" style="pointer-events:none"><svg class="skip-svg" viewBox="0 0 24 24"><polygon points="5,4 15,12 5,20" style="'+skipPoly+'"/><line x1="19" y1="4" x2="19" y2="20" stroke-width="2" stroke-linecap="round" style="'+skipLine+'"/></svg></button>'+
-    '<button class="volume-btn" style="pointer-events:none"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="width:26px;height:26px;stroke:'+skipClr+'"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>'+
+    '<button class="volume-btn" style="pointer-events:none"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="width:26px;height:26px;stroke:'+skipClr+'"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M14.5 9a3.5 3.5 0 0 1 0 6"/><path d="M17.5 6.5a7 7 0 0 1 0 11"/></svg></button>'+
     '</div>'+
     '<div class="credits-row">'+
       '<div class="credit-item"><span class="credit-label" style="color:'+t.creditLabel+'">Art by</span><span class="credit-link" style="color:'+t.creditName+'">'+esc(t.artName||'')+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></div>'+
@@ -406,7 +442,19 @@ function carouselNavigate(dir, onSwap){
 
 // ── Старт ─────────────────────────────────────────────────────────────────────
 // ── Старт ─────────────────────────────────────────────────────────────────────
-var startIndex=Math.floor(Math.random()*TRACKS.length);
+// Восстанавливаем громкость
+var savedVolume = parseFloat(localStorage.getItem('volume'));
+if (!isNaN(savedVolume)) {
+  audio.volume = savedVolume;
+  volumeSlider.value = savedVolume;
+  updateVolIcon();
+}
+
+// Восстанавливаем последний трек, иначе случайный
+var savedIndex = parseInt(localStorage.getItem('trackIndex'));
+var startIndex = (!isNaN(savedIndex) && savedIndex >= 0 && savedIndex < TRACKS.length)
+  ? savedIndex
+  : Math.floor(Math.random() * TRACKS.length);
 prevCard._idx=-1; nextCard._idx=-1; ghostCard._idx=-1;
 
 // Клик по боковым карточкам — переключение треков

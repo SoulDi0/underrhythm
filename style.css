@@ -1,4 +1,4 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
     html, body {
       width: 100%; min-height: 100vh;
       background: #090909;
@@ -242,6 +242,7 @@
     .menu-search input {
       background: none; border: none; outline: none; color: rgba(255,255,255,0.8);
       font-family: 'IBM Plex Mono', monospace; font-size: 14px; letter-spacing: 0.04em; width: 100%;
+      user-select: text; -webkit-user-select: text;
     }
     .menu-search input::placeholder { color: rgba(255,255,255,0.25); }
     .menu-panel { display: none; flex-direction: column; gap: 4px; margin-top: 12px; overflow-y: auto; flex: 1; min-height: 0; }
